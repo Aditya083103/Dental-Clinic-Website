@@ -1,47 +1,66 @@
 <?php
 
-$conn = mysqli_connect('localhost','root','','contact_db') or die('connection failed');
+// Database connection parameters
+$servername = "localhost";
+$username = "root";
+$password = "";
+$database = "contact_db";
 
-if(isset($_POST['submit'])){
+// Create connection
+$conn = new mysqli($servername, $username, $password, $database);
 
-   $name = mysqli_real_escape_string($conn, $_POST['name']);
-   $email = mysqli_real_escape_string($conn, $_POST['email']);
-   $number = $_POST['number'];
-   $date = $_POST['date'];
-
-   $insert = mysqli_query($conn, "INSERT INTO `contact_form`(name, email, number, date) VALUES('$name','$email','$number','$date')") or die('query failed');
-
-   if($insert){
-      $message[] = 'appointment made successfully!';
-   }else{
-      $message[] = 'appointment failed';
-   }
-
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-function sanitize_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    return $data;
-}
+// Function to add a review to the database
+function addReview($conn, $name, $rating, $comment) {
+    $name = $conn->real_escape_string($name);
+    $rating = $conn->real_escape_string($rating);
+    $comment = $conn->real_escape_string($comment);
 
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = sanitize_input($_POST["name"]);
-    $rating = sanitize_input($_POST["rating"]);
-    $comment = sanitize_input($_POST["comment"]);
-
-    // Insert into database
     $sql = "INSERT INTO reviews (name, rating, comment) VALUES ('$name', '$rating', '$comment')";
-    
+
     if ($conn->query($sql) === TRUE) {
-        echo "Review added successfully";
+        return true;
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        return false;
     }
 }
+
+// Check if form data is submitted
+if(isset($_POST['submit'])) {
+    $name = mysqli_real_escape_string($conn, $_POST['name']);
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $number = $_POST['number'];
+    $date = $_POST['date'];
+
+    // Insert contact form data into the database
+    $insert_contact = mysqli_query($conn, "INSERT INTO contact_form (name, email, number, date) VALUES ('$name','$email','$number','$date')") or die('Contact form query failed');
+
+    // Add the review to the database
+    if(isset($_POST['rating']) && isset($_POST['comment'])) {
+        $rating = $_POST['rating'];
+        $comment = $_POST['comment'];
+
+        // Add the review to the database
+        if(addReview($conn, $name, $rating, $comment)) {
+            echo "Review added successfully";
+        } else {
+            echo "Error adding review";
+        }
+    }
+
+    if($insert_contact) {
+        $message[] = 'Appointment made successfully!';
+    } else {
+        $message[] = 'Appointment failed';
+    }
+}
+
 ?>
+
 
 
 <!DOCTYPE html>
