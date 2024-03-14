@@ -119,7 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="icons">
         <i class="fas fa-procedures"></i>
-        <h3>4</h3>
+        <h3>5</h3>
         <p>bed facility</p>
     </div>
 
